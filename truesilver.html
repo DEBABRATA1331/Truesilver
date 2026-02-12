@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>truesilver</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Sacramento&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#ff4f87;--bg1:#ffe6f0;--bg2:#fff5fa}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}
+body{background:linear-gradient(var(--bg1),var(--bg2));color:#333;overflow-x:hidden}
+section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px}
+h1{font-family:'Sacramento',cursive;font-size:3rem;color:var(--accent)}
+.photo{width:220px;height:220px;border-radius:20px;background:#fff;margin:20px 0;background-size:cover;background-position:center;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
+.timeline-item{opacity:0;transform:translateY(40px);transition:1s}
+.timeline-item.visible{opacity:1;transform:translateY(0)}
+button{background:var(--accent);border:none;color:#fff;padding:12px 18px;margin:8px;border-radius:12px;cursor:pointer}
+.card{background:#fff;border-radius:18px;padding:20px;margin:20px;box-shadow:0 10px 25px rgba(0,0,0,.15);opacity:0;transform:translateY(40px);transition:1s}
+.card.visible{opacity:1;transform:translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+.modal-content{background:#fff;padding:25px;border-radius:18px;max-width:500px}
+.paper{background:#fffef8;border-radius:8px;padding:35px;max-width:650px;box-shadow:0 25px 60px rgba(0,0,0,.25);background-image:repeating-linear-gradient(#fffef8,#fffef8 28px,#f3e9d2 29px)}
+.envelope{width:200px;height:140px;background:#ffb3c9;position:relative;cursor:pointer;transition:.6s}
+.flap{position:absolute;width:0;height:0;border-left:100px solid transparent;border-right:100px solid transparent;border-bottom:70px solid #ff8fb3;top:-70px;left:0;transform-origin:top;transition:.7s}
+.open .flap{transform:rotateX(180deg)}
+.hidden{opacity:0;transform:translateY(20px);transition:1s}
+.show{opacity:1;transform:translateY(0)}
+#ily{font-size:2.6rem;font-family:'Sacramento',cursive;color:#fff;letter-spacing:2px}
+.spark{position:fixed;font-size:18px;pointer-events:none;animation:float 5s linear forwards}
+@keyframes float{to{transform:translateY(-120vh) translateX(80px);opacity:0}}
+
+</style>
+</head>
+<body>
+<audio id="bgm" src="music.mp3" loop></audio>
+
+<section id="landing"><h1>truesilver</h1><p>tap anywhere dev ❤️</p></section>
+
+<section class="timeline-item"><h2>The Day We Met</h2><div class="photo" style="background-image:url('photo1.jpg')"></div><p>Beginning of everything dhana</p></section>
+<section class="timeline-item"><h2>Our Laughs</h2><div class="photo" style="background-image:url('photo2.jpg')"></div><p>gucchu memories unlocked</p></section>
+<section class="timeline-item"><h2>Hard Days</h2><div class="photo" style="background-image:url('photo3.jpg')"></div><p>we stayed</p></section>
+<section class="timeline-item"><h2>Today</h2><div class="photo" style="background-image:url('photo4.jpg')"></div><p>still choosing you</p></section>
+
+<section>
+<h2>Choose Your Memory</h2>
+<button onclick="openM(0)">Our funniest moment</button>
+<button onclick="openM(1)">The day I realized</button>
+<button onclick="openM(2)">The fight we survived</button>
+<button onclick="openM(3)">What I never told you</button>
+</section>
+<div class="modal" id="modal"><div class="modal-content"><p id="mtext"></p><br><button onclick="closeM()">close</button></div></div>
+
+<section>
+<h2>Reasons I Love You</h2>
+<div class="card">1. you laugh before finishing your own joke dhana</div>
+<div class="card">2. you call me dev softly</div>
+<div class="card">3. mucchu mode randomly</div>
+<div class="card">4. truesilver smile fixes everything</div>
+<div class="card">5. because you are you — satarupa</div>
+</section>
+
+<section>
+<h2>Open this</h2>
+<div class="envelope" id="env"><div class="flap"></div></div>
+<div id="inside" class="paper hidden">
+<p>Some things I never say properly in real life…<br><br>You became comfort without announcement. Not dramatic, not loud — just quietly important.<br><br>— Rocky</p>
+</div>
+</section>
+
+<section><h2>A small letter</h2><div class="paper"><p id="type"></p></div></section>
+
+<section><h2>Love Game</h2><p>tap heart till full</p><div id="gameHeart">🤍</div><p id="score">0/10</p></section>
+
+<section><h2>Find The Pair</h2><div id="grid" style="display:grid;grid-template-columns:repeat(4,70px);gap:10px;justify-content:center"></div></section>
+
+<section><h2 id="ily"></h2></section>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+const bgm=document.getElementById('bgm');
+const modal=document.getElementById('modal');
+const mtext=document.getElementById('mtext');
+const env=document.getElementById('env');
+const inside=document.getElementById('inside');
+const typeEl=document.getElementById('type');
+const gameHeart=document.getElementById('gameHeart');
+const score=document.getElementById('score');
+const grid=document.getElementById('grid');
+const ilyEl=document.getElementById('ily');
+
+// music
+document.body.addEventListener('click',()=>bgm.play().catch(()=>{}),{once:true});
+
+// reveal
+const obs=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('visible')),{threshold:.3});
+document.querySelectorAll('.timeline-item,.card').forEach(el=>obs.observe(el));
+
+// modal
+window.openM=i=>{modal.style.display='flex';mtext.textContent=["we laughed too much gucchu","that day you became home dhana","we chose us","i need you more than i say"][i]};
+window.closeM=()=>modal.style.display='none';
+
+// envelope
+env.onclick=()=>{env.classList.add('open');inside.classList.add('show');createHearts(12)};
+
+// typewriter
+const msg="If life ever feels heavy mucchu, come back here. Rocky still choosing you everyday.";
+let ti=0;(function type(){if(ti<msg.length){typeEl.textContent+=msg[ti++];setTimeout(type,35)}})();
+
+// love game
+let s=0;gameHeart.onclick=()=>{s++;score.textContent=s+'/10';if(s>=10)gameHeart.textContent='❤️'};
+
+// memory game
+const emojis=['❤️','🌙','✨','🐻','❤️','🌙','✨','🐻'].sort(()=>Math.random()-.5);
+let first=null,lock=false;
+emojis.forEach(e=>{let c=document.createElement('div');c.textContent='?';c.style.background='#fff';c.style.borderRadius='12px';c.style.padding='20px';c.style.cursor='pointer';c.onclick=()=>{if(lock||c.textContent!='?')return;c.textContent=e;if(!first)first=c;else{if(first.textContent===c.textContent){first=null}else{lock=true;setTimeout(()=>{first.textContent='?';c.textContent='?';first=null;lock=false},700)}}};grid.appendChild(c)});
+
+// final ily
+const ily="I love you Satarupa";let j=0;
+ilyEl.innerHTML='<span id="caret">|</span>';
+const caret=document.getElementById('caret');
+setInterval(()=>caret.style.opacity=caret.style.opacity==0?1:0,500);
+new IntersectionObserver(e=>{if(e[0].isIntersecting)animateILY()},{threshold:.6}).observe(ilyEl);
+function animateILY(){
+ if(j<ily.length){
+   const span=document.createElement('span');
+   span.textContent=ily[j++];
+   span.style.opacity=0;
+   span.style.transition='opacity .6s, transform .6s';
+   span.style.transform='translateY(10px) scale(0.8)';
+   ilyEl.insertBefore(span,caret);
+   requestAnimationFrame(()=>{span.style.opacity=1;span.style.transform='translateY(0) scale(1)'});
+   setTimeout(animateILY,140);
+ }else{
+   caret.remove();
+   glowPulse();
+   butterflies();
+   createHearts(25);
+ }
+}
+function glowPulse(){ilyEl.style.textShadow='0 0 10px #ff8fb3,0 0 20px #ff5c8a,0 0 40px #ff2e6e';}
+
+function butterflies(){for(let i=0;i<25;i++){let b=document.createElement('div');b.textContent='🦋';b.className='spark';b.style.left=Math.random()*100+'vw';b.style.bottom='-20px';document.body.appendChild(b);setTimeout(()=>b.remove(),5000)}}
+function createHearts(n){for(let i=0;i<n;i++){let h=document.createElement('div');h.textContent='❤️';h.className='spark';h.style.left=Math.random()*100+'vw';h.style.bottom='-20px';document.body.appendChild(h);setTimeout(()=>h.remove(),5000)}}
+});
+</script>
+</body>
+</html>
